@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- ============================================ -->
+    <!-- CONFIGURACIÓN MÓVIL-FIRST -->
+    <!-- ============================================ -->
+    
+    <!-- Viewport optimizado para móvil -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    
+    <!-- Theme Color (para la barra de navegación móvil) -->
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e40af" />
+    
+    <!-- ============================================ -->
+    <!-- PWA (PROGRESSIVE WEB APP) -->
+    <!-- ============================================ -->
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    
+    <!-- Apple Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Créditos Eider" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png" />
+    
+    <!-- ============================================ -->
+    <!-- SEO Y METADATOS -->
+    <!-- ============================================ -->
+    
+    <title>Sistema de Créditos Eider</title>
+    <meta name="description" content="Sistema de gestión de créditos, cobros y comisiones para cobradores y vendedores" />
+    <meta name="keywords" content="créditos, cobros, comisiones, gestión, ventas" />
+    <meta name="author" content="Créditos Eider" />
+    
+    <!-- No indexar en desarrollo -->
+    <!-- <meta name="robots" content="noindex, nofollow" /> -->
+    
+    <!-- ============================================ -->
+    <!-- OPTIMIZACIONES DE PERFORMANCE -->
+    <!-- ============================================ -->
+    
+    <!-- Preconnect a servicios externos -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    
+    <!-- ============================================ -->
+    <!-- LEAFLET CSS PARA MAPAS -->
+    <!-- ============================================ -->
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <!-- ============================================ -->
+    <!-- SPLASH SCREEN / LOADING -->
+    <!-- ============================================ -->
+    
+    <style>
+      /* Loading inicial optimizado para móvil */
+      #app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease;
+      }
+      
+      #app-loading.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loader {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loader-text {
+        color: white;
+        margin-top: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Optimizaciones de performance */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior: none;
+      }
+      
+      #root {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+      }
+      
+      /* Safe area para iPhone con notch */
+      @supports (padding: max(0px)) {
+        body {
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading inicial -->
+    <div id="app-loading">
+      <div class="loader"></div>
+      <div class="loader-text">Cargando...</div>
+    </div>
+    
+    <!-- App React -->
+    <div id="root"></div>
+    
+    <!-- Script principal -->
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Registrar Service Worker -->
+    <script>
+      // Ocultar loading cuando React cargue
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('app-loading');
+          if (loading) {
+            loading.classList.add('hidden');
+            setTimeout(() => loading.remove(), 300);
+          }
+        }, 500);
+      });
+      
+      // Registrar Service Worker para funcionalidad offline
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('✅ Service Worker registrado:', registration.scope);
+              
+              // Actualizar cuando haya una nueva versión
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Hay una nueva versión disponible
+                    console.log('📦 Nueva versión disponible');
+                    
+                    // Opcional: mostrar notificación al usuario
+                    if (confirm('Hay una nueva versión disponible. ¿Deseas actualizar?')) {
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch(error => {
+              console.log('❌ Error al registrar Service Worker:', error);
+            });
+        });
+        
+        // Recargar cuando el Service Worker tome control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      }
+      
+      // Detectar si está instalado como PWA
+      window.addEventListener('DOMContentLoaded', () => {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                          || window.navigator.standalone 
+                          || document.referrer.includes('android-app://');
+        
+        if (isStandalone) {
+          console.log('🎉 App ejecutándose como PWA');
+          document.body.classList.add('pwa-mode');
+        }
+      });
+      
+      // Prompt de instalación de PWA
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('💾 App puede instalarse como PWA');
+        
+        // Mostrar botón de instalación (implementar en React)
+        window.dispatchEvent(new CustomEvent('pwa-install-available'));
+      });
+      
+      // Función global para instalar PWA (llamar desde React)
+      window.installPWA = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} la instalación`);
+          deferredPrompt = null;
+        }
+      };
+    </script>
+  </body>
+</html>
